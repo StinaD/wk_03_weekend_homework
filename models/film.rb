@@ -27,7 +27,7 @@ class Film
 
 
   # instance functions -------
-  def save
+  def save_film
     sql = "INSERT into films ( title, price ) VALUES ( $1, $2 ) RETURNING id;"
     values = [@title, @price]
     result = SqlRunner.run(sql, values)
@@ -68,5 +68,16 @@ class Film
       Customer.new(customer)}
   end
 
+  def tickets
+    sql = "SELECT tickets.*
+    FROM tickets
+    INNER JOIN films
+    ON tickets.film_id = films.id
+    WHERE films.id = $1;"
+    values = [@id]
+    results = SqlRunner.run(sql, values)
+    films = results.map { |film| Film.new(film) }
+    return films.count 
+  end
 
 end

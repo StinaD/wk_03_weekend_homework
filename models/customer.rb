@@ -1,4 +1,6 @@
 require_relative('../db/sql_runner.rb')
+require_relative('film.rb')
+require_relative('ticket.rb')
 
 class Customer
 
@@ -25,7 +27,7 @@ class Customer
 
 
   # instance functions --------
-  def save
+  def save_customer
     sql = "INSERT into customers ( name, funds)
     VALUES ( $1, $2 )
     RETURNING id;"
@@ -66,6 +68,30 @@ class Customer
     result = SqlRunner.run(sql, values)
     film_hash = result.first
     return Film.new(film_hash).title
+  end
+
+  def sufficient_funds?(film)
+    @funds >= film.price
+  end
+
+  def buy_ticket(film)
+    if sufficient_funds?(film)
+      @funds -= film.price
+      ticket = Ticket.new({"customer_id" => @id, "film_id" => film.id})
+      ticket.save_ticket
+    end
+  end
+
+  def films
+    sql = "SELECT tickets.*
+    FROM tickets
+    INNER JOIN customers
+    ON customers.id = tickets.customer_id
+    WHERE customers.id = $1;"
+    values = [@id]
+    result = SqlRunner.run(sql, values)
+    tickets = result.map { |ticket| Ticket.new(ticket) }
+    tickets.count 
   end
 
 

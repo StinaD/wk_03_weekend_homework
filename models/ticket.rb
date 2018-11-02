@@ -26,7 +26,7 @@ class Ticket
 
 
 # instance functions -------
-  def save
+  def save_ticket
     sql = "INSERT into tickets ( customer_id, film_id ) VALUES ( $1, $2 ) RETURNING id;"
     values = [ @customer_id, @film_id ]
     result = SqlRunner.run(sql, values)
