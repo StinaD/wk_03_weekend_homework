@@ -55,7 +55,7 @@ class Film
   end
 
   def find_customers
-    sql = "SELECT customers.name
+    sql = "SELECT customers.*
     FROM customers
     INNER JOIN tickets
     ON tickets.customer_id = customers.id
@@ -64,10 +64,9 @@ class Film
     WHERE films.id = $1;"
     values = [@id]
     customers = SqlRunner.run(sql, values)
-    customers.map { | customer |
-      Customer.new(customer)
-    customer.each { | customer| p customer.name
-    }
+    return customers.map { | customer |
+      Customer.new(customer)}
   end
+
 
 end
