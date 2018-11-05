@@ -1,6 +1,7 @@
 require_relative('../db/sql_runner.rb')
 require_relative('film.rb')
 require_relative('ticket.rb')
+require_relative('screening.rb')
 
 class Customer
 
@@ -74,11 +75,13 @@ class Customer
     @funds >= film.price
   end
 
-  def buy_ticket(film)
-    if sufficient_funds?(film)
+  def buy_ticket(film, screening)
+    if (screening.max_capacity > screening.number_of_tickets_sold) &&     sufficient_funds?(film)
       @funds -= film.price
-      ticket = Ticket.new({"customer_id" => @id, "film_id" => film.id})
+      ticket = Ticket.new({"customer_id" => @id, "screening_id" => screening.id})
       ticket.save_ticket
+    else
+      p "Screening is fully booked"
     end
   end
 
@@ -91,7 +94,7 @@ class Customer
     values = [@id]
     result = SqlRunner.run(sql, values)
     tickets = result.map { |ticket| Ticket.new(ticket) }
-    tickets.count 
+    tickets.count
   end
 
 

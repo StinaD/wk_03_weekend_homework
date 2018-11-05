@@ -1,5 +1,6 @@
 require_relative('../db/sql_runner.rb')
 require_relative('customer.rb')
+require_relative('screening.rb')
 
 class Film
 
@@ -15,7 +16,7 @@ class Film
 
 # class functions -----------
   def self.all
-    sql = "SELECT * FROM films"
+    sql = "SELECT * FROM films ORDER BY title"
     all_films = SqlRunner.run(sql)
     return all_films.map { |film| Film.new(film) }
   end
@@ -68,6 +69,7 @@ class Film
       Customer.new(customer)}
   end
 
+# Basic extension
   def tickets
     sql = "SELECT tickets.*
     FROM tickets
@@ -76,8 +78,38 @@ class Film
     WHERE films.id = $1;"
     values = [@id]
     results = SqlRunner.run(sql, values)
-    films = results.map { |film| Film.new(film) }
-    return films.count 
+    tickets = results.map { |ticket| Ticket.new(ticket) }
+    return tickets.count
   end
+
+# Advanced extension
+
+  def film_times
+    sql = "SELECT screenings.*
+    FROM screenings
+    INNER JOIN films
+    ON films.id = screenings.film_id
+    WHERE films.id = $1;"
+    values = [@id]
+    results = SqlRunner.run(sql, values)
+    screenings = results.map { | screening | Screening.new(screening).time }
+  end
+
+  def most_popular_screening
+    sql = "SELECT screenings.*
+    FROM screenings
+    INNER JOIN films
+    ON films.id = screenings.film_id
+    WHERE films.id = $1;"
+    values = [@id]
+    results = SqlRunner.run(sql, values)
+    screenings = results.map { |screening| Screening.new(screening) }
+
+    screenings_tickets = screenings.map { |screening| {screening.time => screening.number_of_tickets_sold} }
+
+    screenings_tickets.max_by { | key, value| p value }
+  end
+
+
 
 end
